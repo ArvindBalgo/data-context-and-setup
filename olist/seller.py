@@ -141,8 +141,17 @@ class Seller:
         Returns a DataFrame with:
         'seller_id', 'share_of_five_stars', 'share_of_one_stars', 'review_score'
         """
+        #order_items = self.data['order_items']
+        ##order_items['share_of_five_stars'] = order_items['review_score'].apply(lambda x: 1 if x == 5 else 0)
 
-        pass  # YOUR CODE HERE
+        dims = Order().get_review_score()
+        review_score_seller = dims.merge(self.data['order_items'], how='left', left_on='order_id', right_on='order_id')
+        review_score_seller = review_score_seller[['order_id','seller_id', 'review_score', 'dim_is_five_star', 'dim_is_one_star']]
+
+        review_score_summary = review_score_seller.groupby('seller_id').agg({'review_score': 'mean', 'dim_is_five_star': 'count', 'dim_is_one_star': 'count'}).reset_index()
+        review_score_summary.rename(columns={'dim_is_five_star': 'share_of_five_stars', 'dim_is_one_star':'share_of_one_stars'}, inplace=True)
+
+        return review_score_summary
 
     def get_training_data(self):
         """
